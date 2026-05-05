@@ -218,10 +218,6 @@
             margin: 40px 0;
             position: relative;
         }
-        .video-wrap video {
-            width: 100%; height: 100%;
-            object-fit: cover; display: block;
-        }
 
         /* IMAGES */
         .image-stack { display: flex; flex-direction: column; gap: 16px; margin: 40px 0; }
@@ -546,14 +542,14 @@
 <section>
     <div class="container">
         <div class="video-wrap reveal" data-reveal-image>
-            <video
-                    src="../videos/es-showcase.mp4"
-                    autoplay
-                    muted
-                    loop
-                    playsinline
-                    controls
-            ></video>
+            <iframe
+                    src="https://www.youtube.com/embed/YDdT_ALjppc?rel=0&modestbranding=1"
+                    title="Elder Scrolls VI UI Concept"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    style="width:100%;height:100%;position:absolute;top:0;left:0;"
+            ></iframe>
         </div>
     </div>
 </section>
