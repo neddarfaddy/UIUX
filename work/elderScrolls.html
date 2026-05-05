@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+
+    <title>Elder Scrolls 6 UI Concept — Fady Neddar</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #111111;
+            --text-muted: #6b6b6b;
+            --border: #ececec;
+            --accent: #003cff;
+            --max-width: 1280px;
+            --gutter: 48px;
+            --col-left: 320px;
+            --col-gap: 80px;
+            --ease: cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.55;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.005em;
+            overflow-x: hidden;
+        }
+
+        body.is-loading { overflow: hidden; }
+        body.is-loading .reveal-on-load { opacity: 0; }
+
+        a { color: inherit; text-decoration: none; }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--gutter);
+        }
+
+        /* LOADER */
+        .loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .loader-mark { font-size: 14px; font-weight: 700; opacity: 0; }
+        .loader-counter {
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+        }
+        .loader-bar {
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 1px; width: 100%;
+            background: var(--text);
+            transform-origin: left;
+            transform: scaleX(0);
+        }
+
+        /* NAV */
+        nav {
+            padding: 28px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+        .nav-logo { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .nav-links a { color: var(--text-muted); transition: color 0.2s ease; }
+        .nav-links a:hover { color: var(--text); }
+        .nav-toggle {
+            display: none;
+            background: none; border: none;
+            cursor: pointer; padding: 8px; margin: -8px;
+            position: relative; width: 32px; height: 32px; z-index: 60;
+        }
+        .nav-toggle span {
+            display: block; position: absolute;
+            left: 6px; right: 6px; height: 1.5px;
+            background: var(--text);
+            transition: transform 0.4s var(--ease), top 0.4s var(--ease);
+        }
+        .nav-toggle span:nth-child(1) { top: 11px; }
+        .nav-toggle span:nth-child(2) { top: 20px; }
+        .nav-toggle.is-open span:nth-child(1) { top: 15px; transform: rotate(45deg); }
+        .nav-toggle.is-open span:nth-child(2) { top: 15px; transform: rotate(-45deg); }
+
+        /* MOBILE MENU */
+        .mobile-menu {
+            position: fixed; inset: 0;
+            background: var(--bg);
+            z-index: 50;
+            display: flex; flex-direction: column;
+            justify-content: space-between;
+            padding: 100px var(--gutter) 48px;
+            clip-path: inset(0 0 100% 0);
+            transition: clip-path 0.6s var(--ease);
+            visibility: hidden;
+        }
+        .mobile-menu.is-open { clip-path: inset(0 0 0 0); visibility: visible; }
+        .mobile-menu-links { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .mobile-menu-links a {
+            font-size: 44px; font-weight: 700;
+            letter-spacing: -0.02em; line-height: 1.1;
+            display: inline-block; opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s var(--ease);
+        }
+        .mobile-menu.is-open .mobile-menu-links a { opacity: 1; transform: translateY(0); }
+        .mobile-menu.is-open .mobile-menu-links li:nth-child(1) a { transition-delay: 0.25s; }
+        .mobile-menu.is-open .mobile-menu-links li:nth-child(2) a { transition-delay: 0.32s; }
+        .mobile-menu.is-open .mobile-menu-links li:nth-child(3) a { transition-delay: 0.39s; }
+        .mobile-menu-footer {
+            font-size: 11px; letter-spacing: 0.15em;
+            text-transform: uppercase; font-weight: 600;
+            color: var(--text-muted);
+            display: flex; justify-content: space-between;
+            opacity: 0; transition: opacity 0.5s ease 0.5s;
+        }
+        .mobile-menu.is-open .mobile-menu-footer { opacity: 1; }
+
+        /* BACK LINK */
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 12px; letter-spacing: 0.12em;
+            text-transform: uppercase; font-weight: 600;
+            color: var(--text-muted);
+            transition: gap 0.3s var(--ease), color 0.2s ease;
+        }
+        .back-link:hover { gap: 10px; color: var(--text); }
+
+        /* ROW */
+        .row {
+            display: grid;
+            grid-template-columns: var(--col-left) 1fr;
+            gap: var(--col-gap);
+            align-items: start;
+        }
+        .col-heading {
+            font-size: 28px; font-weight: 700;
+            letter-spacing: -0.015em; line-height: 1.2;
+        }
+        .col-body p { font-size: 16px; line-height: 1.65; margin-bottom: 16px; }
+        .col-body p:last-child { margin-bottom: 0; }
+        .col-body .muted-note { font-size: 13px; color: var(--text-muted); margin-top: 24px; }
+
+        /* INTRO */
+        .intro-content {
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 64px; align-items: start;
+        }
+        .meta-stack { display: flex; flex-direction: column; gap: 24px; }
+        .meta-block .meta-label {
+            font-size: 11px; letter-spacing: 0.15em;
+            text-transform: uppercase; font-weight: 600;
+            color: var(--text-muted); margin-bottom: 6px;
+        }
+        .meta-block .meta-value {
+            font-size: 13px; letter-spacing: 0.12em;
+            text-transform: uppercase; font-weight: 600; color: var(--text);
+        }
+        .project-title {
+            font-size: 64px; font-weight: 700;
+            letter-spacing: -0.03em; line-height: 1;
+        }
+
+        /* SECTIONS */
+        .intro-section { padding: 80px 0 60px; }
+        .body-section { padding: 60px 0; }
+
+        /* VIDEO */
+        .video-wrap {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 40px 0;
+            position: relative;
+        }
+        .video-wrap video {
+            width: 100%; height: 100%;
+            object-fit: cover; display: block;
+        }
+
+        /* IMAGES */
+        .image-stack { display: flex; flex-direction: column; gap: 16px; margin: 40px 0; }
+        .image-row { display: grid; gap: 16px; }
+        .image-row.cols-2 { grid-template-columns: 1fr 1fr; }
+        .image-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+        .image-frame {
+            width: 100%; aspect-ratio: 16 / 9;
+            background: #f4f4f4; border-radius: 6px;
+            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .image-frame img {
+            width: 100%; height: 100%;
+            object-fit: cover; display: block;
+        }
+        .image-caption {
+            text-align: center;
+            font-size: 11px; letter-spacing: 0.2em;
+            text-transform: uppercase; font-weight: 600;
+            color: var(--text-muted); margin: 8px 0;
+        }
+
+        /* LINKS */
+        .external-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            margin-top: 16px; color: var(--accent);
+            font-size: 12px; letter-spacing: 0.12em;
+            text-transform: uppercase; font-weight: 600;
+            transition: gap 0.3s var(--ease);
+        }
+        .external-link:hover { gap: 10px; }
+
+        .btn-prototype {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+            background: var(--text);
+            color: var(--bg);
+            padding: 18px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            border-radius: 2px;
+            margin-top: 32px;
+            position: relative;
+            overflow: hidden;
+            transition: color 0.3s ease;
+        }
+        .btn-prototype::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: var(--accent);
+            transform: translateY(101%);
+            transition: transform 0.5s var(--ease);
+        }
+        .btn-prototype > * { position: relative; z-index: 1; }
+        .btn-prototype:hover { color: var(--bg); }
+        .btn-prototype:hover::before { transform: translateY(0); }
+        .btn-prototype-arrow { font-size: 16px; transition: transform 0.4s var(--ease); }
+        .btn-prototype:hover .btn-prototype-arrow { transform: translate(4px, -4px); }
+
+        /* DIVIDER */
+        .section-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 0;
+        }
+
+        /* DISCLAIMER */
+        .disclaimer {
+            padding: 40px 0;
+            border-top: 1px solid var(--border);
+        }
+        .disclaimer p {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            max-width: 720px;
+        }
+
+        /* CONTACT */
+        .contact {
+            padding: 120px 0;
+            border-top: 1px solid var(--border);
+            margin-top: 80px;
+        }
+        .contact-text { font-size: 16px; line-height: 1.55; max-width: 640px; }
+        .contact-text a { color: var(--accent); font-weight: 500; }
+        .contact-text a:hover { opacity: 0.7; }
+
+        /* FOOTER */
+        footer {
+            padding: 32px 0 48px;
+            border-top: 1px solid var(--border);
+            font-size: 12px; letter-spacing: 0.12em;
+            text-transform: uppercase; font-weight: 600;
+            color: var(--text-muted);
+        }
+        .footer-inner {
+            max-width: var(--max-width); margin: 0 auto;
+            padding: 0 var(--gutter);
+            display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 16px;
+        }
+        .footer-links { display: flex; gap: 8px; }
+        .footer-links a { color: var(--accent); }
+        .footer-links a:hover { opacity: 0.7; }
+        .footer-links .sep { color: var(--text-muted); }
+        footer .back-top { color: var(--accent); cursor: pointer; }
+
+        /* REVEAL */
+        .reveal { opacity: 0; transform: translateY(40px); }
+
+
+        /* RESEARCH / CRITICISM */
+        .research-section { padding: 80px 0; background: #fafafa; margin: 60px 0; }
+        .research-intro { max-width: 560px; margin-bottom: 56px; }
+        .research-intro p { font-size: 16px; line-height: 1.65; color: var(--text); }
+
+        .criticism-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+            background: var(--border);
+            border: 1px solid var(--border);
+        }
+
+        .criticism-item {
+            background: #fafafa;
+            padding: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .criticism-quote-wrap {
+            padding-left: 20px;
+            border-left: 2px solid var(--text);
+            margin-bottom: 10px;
+        }
+
+        .criticism-quote {
+            font-size: 14px;
+            line-height: 1.65;
+            color: var(--text);
+            font-style: italic;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .criticism-author {
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .criticism-response {
+            padding-top: 24px;
+            margin-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .criticism-response-label {
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .criticism-response p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        /* USER FLOW */
+        .flow-section { padding: 80px 0 60px; }
+        .flow-diagram {
+            margin-top: 48px;
+        }
+
+        @media (max-width: 900px) {
+            .criticism-grid { grid-template-columns: 1fr; }
+            .criticism-item { padding: 24px; }
+            .research-section { padding: 48px 0; margin: 40px 0; }
+            .flow-section { padding: 48px 0 40px; }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            :root { --gutter: 24px; --col-gap: 32px; }
+            nav { padding: 20px 0; }
+            .nav-links { display: none; }
+            .nav-toggle { display: block; }
+            .row { grid-template-columns: 1fr; gap: 24px; }
+            .intro-content { grid-template-columns: 1fr; gap: 32px; }
+            .intro-section { padding: 40px 0 32px; }
+            .body-section { padding: 40px 0; }
+            .project-title { font-size: 44px; letter-spacing: -0.025em; }
+            .col-heading { font-size: 24px; }
+            .meta-stack { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 24px; }
+            .image-frame { border-radius: 4px; }
+            .image-row.cols-2, .image-row.cols-3 { grid-template-columns: 1fr; }
+            .contact { padding: 64px 0; margin-top: 40px; }
+            footer { padding: 24px 0 32px; }
+            .btn-prototype { width: 100%; }
+        }
+        @media (max-width: 480px) {
+            .project-title { font-size: 38px; }
+            .mobile-menu-links a { font-size: 36px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+            .loader { display: none; }
+            .reveal { opacity: 1 !important; transform: none !important; }
+        }
+    </style>
+</head>
+<body class="is-loading">
+
+<!-- LOADER -->
+<div class="loader" id="loader" aria-hidden="true">
+    <div class="loader-mark" id="loader-mark">Elder Scrolls VI</div>
+    <div class="loader-counter">
+        <span id="loader-num">000</span>
+        <span>—</span>
+        <span>100</span>
+    </div>
+    <div class="loader-bar" id="loader-bar"></div>
+</div>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <ul class="mobile-menu-links">
+        <li><a href="../index.html#work" data-menu-link>Work</a></li>
+        <li><a href="#" data-menu-link>Resume</a></li>
+        <li><a href="../index.html#contact" data-menu-link>Contact</a></li>
+    </ul>
+    <div class="mobile-menu-footer">
+        <span>Oran, Algeria</span>
+        <span>2026 ©</span>
+    </div>
+</div>
+
+<!-- NAV -->
+<header>
+    <div class="container">
+        <nav>
+            <a href="../index.html" class="nav-logo reveal-on-load" data-nav>Fady Neddar</a>
+            <ul class="nav-links reveal-on-load" data-nav>
+                <li><a href="../index.html#work">Work</a></li>
+                <li><a href="#" target="_blank">Resume</a></li>
+                <li><a href="../index.html#contact">Contact</a></li>
+            </ul>
+            <button class="nav-toggle reveal-on-load" id="nav-toggle" aria-label="Open menu" data-nav>
+                <span></span><span></span>
+            </button>
+        </nav>
+    </div>
+</header>
+
+<!-- INTRO -->
+<section class="intro-section">
+    <div class="container">
+        <div style="margin-bottom: 32px;">
+            <a href="../index.html" class="back-link reveal-on-load" data-nav>← All Work</a>
+        </div>
+
+        <div class="row">
+            <div>
+                <h1 class="project-title reveal-on-load" id="project-title" data-nav>The Elder<br>Scrolls VI</h1>
+            </div>
+
+            <div class="intro-content">
+                <div class="col-body">
+                    <p class="reveal" data-reveal>
+                        I asked the ES community which game had their favorite UI and why. The answers split pretty evenly between Oblivion and Morrowind, but the complaints were consistent across the board. Skyrim was console-ported and needed SkyUI to actually be usable. Oblivion had charm but buried everything in submenus. Morrowind put everything in one view but was chaos if you didn't already know what you were doing.
+                    </p>
+                    <p class="reveal" data-reveal>
+                        With ES6 still years away, I took that as a brief and designed the whole thing myself. Every screen, every flow, every interaction. The goal was simple: keep the identity and soul that makes Elder Scrolls feel like Elder Scrolls, but actually make it work.
+                    </p>
+                    <a href="https://www.figma.com/proto/WxckyA9W6bfWNdhMr4neUc/Marathon-Work?node-id=391-2517&viewport=-10546%2C-1319%2C0.22&t=tH7Gdh8apva0lvH3-8&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=391%3A2517&page-id=188%3A1038&hide-ui=1" target="_blank" rel="noopener" class="btn-prototype reveal" data-reveal>
+                        <span>View Prototype</span>
+                        <span class="btn-prototype-arrow">↗</span>
+                    </a>
+                </div>
+
+                <div class="meta-stack">
+                    <div class="meta-block reveal" data-reveal>
+                        <div class="meta-label">Type</div>
+                        <div class="meta-value">Concept Project</div>
+                    </div>
+                    <div class="meta-block reveal" data-reveal>
+                        <div class="meta-label">Role</div>
+                        <div class="meta-value">UI/UX Design</div>
+                    </div>
+                    <div class="meta-block reveal" data-reveal>
+                        <div class="meta-label">Year</div>
+                        <div class="meta-value">2026</div>
+                    </div>
+                    <div class="meta-block reveal" data-reveal>
+                        <div class="meta-label">Tools</div>
+                        <div class="meta-value">Figma, After Effects, ElevenLabs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- VIDEO -->
+<section>
+    <div class="container">
+        <div class="video-wrap reveal" data-reveal-image>
+            <video
+                    src="../videos/es-showcase.mp4"
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                    controls
+            ></video>
+        </div>
+    </div>
+</section>
+
+
+<!-- RESEARCH: COMMUNITY CRITICISM -->
+<section class="research-section">
+    <div class="container">
+        <div class="row">
+            <div>
+                <h2 class="col-heading reveal" data-reveal>Research</h2>
+            </div>
+            <div>
+                <div class="research-intro reveal" data-reveal>
+                    <p>Before designing anything, I asked the Elder Scrolls community a direct question: which game had your favorite UI and why? The feedback was split between Oblivion and Morrowind, but the pain points were consistent. Here are four that shaped the design decisions most.</p>
+                </div>
+
+                <div class="criticism-grid reveal" data-reveal>
+                    <div class="criticism-item">
+                        <div class="criticism-quote-wrap">
+                            <span class="criticism-quote">"Skyrim's default UI is so poorly optimised for PC. I have never gone back since I got SkyUI."</span>
+                            <span class="criticism-author">ThirdStreetSeren, r/ElderScrolls</span>
+                        </div>
+                        <div class="criticism-response">
+                            <span class="criticism-response-label">Design response</span>
+                            <p>The tab bar navigation and keyboard-first layout means the ES6 UI works properly on PC without needing a mod to fix it. No console-port compromises.</p>
+                        </div>
+                    </div>
+
+                    <div class="criticism-item">
+                        <div class="criticism-quote-wrap">
+                            <span class="criticism-quote">"Oblivion is a submenu fest that takes a while to get back used to."</span>
+                            <span class="criticism-author">ThirdStreetSeren, r/ElderScrolls</span>
+                        </div>
+                        <div class="criticism-response">
+                            <span class="criticism-response-label">Design response</span>
+                            <p>Every screen is one tab away from any other. There are no nested menus. You open the pause menu and everything is already visible across the top bar.</p>
+                        </div>
+                    </div>
+
+                    <div class="criticism-item">
+                        <div class="criticism-quote-wrap">
+                            <span class="criticism-quote">"I liked being able to see every magic effect on me at a glance in Morrowind, without going several pages into the menu like Skyrim."</span>
+                            <span class="criticism-author">lydiardbell, r/ElderScrolls</span>
+                        </div>
+                        <div class="criticism-response">
+                            <span class="criticism-response-label">Design response</span>
+                            <p>Active effects are shown directly on the Character screen with timers visible. No extra clicks, no digging through menus mid-combat to see what is debuffing you.</p>
+                        </div>
+                    </div>
+
+                    <div class="criticism-item">
+                        <div class="criticism-quote-wrap">
+                            <span class="criticism-quote">"Oblivion has so much character. Skyrim's UI has the aesthetics but no soul. Bethesda should hire whoever did SkyUI."</span>
+                            <span class="criticism-author">bmgarcia20 + InBlurFather, r/ElderScrolls</span>
+                        </div>
+                        <div class="criticism-response">
+                            <span class="criticism-response-label">Design response</span>
+                            <p>The UI uses a consistent visual language rooted in ES lore, from the diamond selection icon to the aged parchment map. It should feel like it belongs in this world, not borrowed from another game.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- USER FLOW -->
+<section class="flow-section">
+    <div class="container">
+        <div class="row" style="margin-bottom: 40px;">
+            <div>
+                <h2 class="col-heading reveal" data-reveal>User Flow</h2>
+            </div>
+            <div class="col-body">
+                <p class="reveal" data-reveal>
+                    The full prototype covers two main flows: the main menu flow from launch to gameplay, and the in-game pause menu system. Every screen connects to every other screen it should logically connect to. The diagram below maps the complete navigation structure.
+                </p>
+            </div>
+        </div>
+
+        <div class="flow-diagram reveal" data-reveal>
+            <img src="../imgs/es-flow-diagram.png" alt="User Flow Diagram" style="width:100%;display:block;border-radius:4px;" />
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- MAIN MENU -->
+<section class="body-section">
+    <div class="container">
+        <div class="row" style="margin-bottom: 40px;">
+            <div>
+                <h2 class="col-heading reveal" data-reveal>Main Menu</h2>
+            </div>
+            <div class="col-body">
+                <p class="reveal" data-reveal>
+                    A lot of people in the community pointed to Oblivion's character as something Skyrim lost. The paper texture, the hand-drawn feel, the sense that the interface actually belonged in that world. Skyrim went minimalist and clean, which works fine, but it ended up feeling like a generic RPG menu rather than an Elder Scrolls one.
+                </p>
+                <p class="reveal" data-reveal>
+                    For the main menu I wanted the world to do the talking. The press start screen drops you straight into the atmosphere with just the title and a single prompt. From there the main menu keeps navigation tucked to the left so the environment fills everything else. The diamond icon you see on the selected item shows up on every screen throughout the UI as a consistent selection marker.
+                </p>
+            </div>
+        </div>
+
+        <div class="image-stack">
+            <div class="image-frame reveal" data-reveal-image>
+                <img src="../imgs/es-mainmenu-press.png" alt="Press Start Screen" />
+            </div>
+            <div class="image-row cols-2">
+                <div class="image-frame reveal" data-reveal-image>
+                    <img src="../imgs/es-mainmenu.png" alt="Main Menu" />
+                </div>
+                <div class="image-frame reveal" data-reveal-image>
+                    <img src="../imgs/es-loading.png" alt="Loading Screen" />
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- IN-GAME UI -->
+<section class="body-section">
+    <div class="container">
+        <div class="row" style="margin-bottom: 40px;">
+            <div>
+                <h2 class="col-heading reveal" data-reveal>In-Game UI</h2>
+            </div>
+            <div class="col-body">
+                <p class="reveal" data-reveal>
+                    Skyrim gets credit for a clean HUD and it deserves it. But one thing that kept coming up in the community was how Morrowind actually handled active effects better. In Skyrim, if something is debuffing you mid-combat you have to go three levels into a menu to find out what. Morrowind showed everything at a glance.
+                </p>
+                <p class="reveal" data-reveal>
+                    The ES6 HUD keeps Skyrim's restraint. Bars at the bottom, compass and current objective top-right. But active effects are visible without opening anything. There are two HUD states here: one with a Khajiit character in bright daylight, and one first-person view in a snowy mountain setting. Both show the same system in different contexts.
+                </p>
+            </div>
+        </div>
+
+        <div class="image-stack">
+            <div class="image-frame reveal" data-reveal-image>
+                <img src="../imgs/es-hud.png" alt="In-Game HUD" />
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- PAUSE MENUS -->
+<section class="body-section">
+    <div class="container">
+        <div class="row" style="margin-bottom: 40px;">
+            <div>
+                <h2 class="col-heading reveal" data-reveal>Pause Menus</h2>
+            </div>
+            <div class="col-body">
+                <p class="reveal" data-reveal>
+                    Even people who loved Oblivion's look admitted the menus were a submenu fest. And Morrowind's floating windows were flexible but overwhelming unless you already knew the game. The ES6 pause system tries to take the best from both without the downsides of either.
+                </p>
+                <p class="reveal" data-reveal>
+                    One tab bar across the top covers everything: Inventory, Character, Map, Quests, Skills, Settings. One button to open, one button to switch. No nested menus to dig through. Every screen shares the same layout structure so moving between them feels natural. Each interaction has a sound effect tied to it, which is something the vanilla ES games have always underused.
+                </p>
+                <p class="reveal" data-reveal>
+                    A few things worth calling out individually. The inventory has categories down the left side with item stats and a detail panel on the right, so you never have to hunt for information. The character screen has Active Effects visible directly on the page, no clicking required. The quest log separates Main, Side, Faction, and Completed quests with filters at the top, and each quest shows a journal entry alongside the objectives. And yes, one of the quests is called "Hire Me" with quest giver Fady Neddar. The load and save screen shows a screenshot thumbnail per save slot, something the series has never had natively and should have had years ago.
+                </p>
+            </div>
+        </div>
+
+        <div class="image-stack">
+            <div class="image-row cols-2">
+                <div>
+                    <div class="image-frame reveal" data-reveal-image>
+                        <img src="../imgs/es-inventory.png" alt="Inventory Screen" />
+                    </div>
+                    <p class="image-caption">Inventory</p>
+                </div>
+                <div>
+                    <div class="image-frame reveal" data-reveal-image>
+                        <img src="../imgs/es-character.png" alt="Character Screen" />
+                    </div>
+                    <p class="image-caption">Character</p>
+                </div>
+            </div>
+            <div class="image-row cols-2">
+                <div>
+                    <div class="image-frame reveal" data-reveal-image>
+                        <img src="../imgs/es-map.png" alt="Map Screen" />
+                    </div>
+                    <p class="image-caption">Map</p>
+                </div>
+                <div>
+                    <div class="image-frame reveal" data-reveal-image>
+                        <img src="../imgs/es-quests.png" alt="Quests Screen" />
+                    </div>
+                    <p class="image-caption">Quests</p>
+                </div>
+            </div>
+            <div class="image-row cols-2">
+                <div>
+                    <div class="image-frame reveal" data-reveal-image>
+                        <img src="../imgs/es-skills.png" alt="Skills Screen" />
+                    </div>
+                    <p class="image-caption">Skills</p>
+                </div>
+                <div>
+                    <div class="image-frame reveal" data-reveal-image>
+                        <img src="../imgs/es-pause-system.png" alt="System Screen" />
+                    </div>
+                    <p class="image-caption">System</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- SETTINGS & LOAD/SAVE -->
+<section class="body-section">
+    <div class="container">
+        <div class="row" style="margin-bottom: 40px;">
+            <div>
+                <h2 class="col-heading reveal" data-reveal>Settings &amp; Save</h2>
+            </div>
+            <div class="col-body">
+                <p class="reveal" data-reveal>
+                    Settings and load/save are the screens most games treat as afterthoughts, and you can tell. Here they follow the exact same structure as everything else. Same layout, same icon system, same transitions. The settings panel opens as an overlay over the pause menu rather than replacing it entirely, which keeps the context intact. Small thing, but it matters.
+                </p>
+            </div>
+        </div>
+
+        <div class="image-stack">
+            <div class="image-row cols-2">
+                <div>
+                    <div class="image-frame reveal" data-reveal-image>
+                        <img src="../imgs/es-settings.png" alt="Settings Screen" />
+                    </div>
+                    <p class="image-caption">Settings</p>
+                </div>
+                <div>
+                    <div class="image-frame reveal" data-reveal-image>
+                        <img src="../imgs/es-loadsave.png" alt="Load / Save Screen" />
+                    </div>
+                    <p class="image-caption">Load / Save</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DISCLAIMER -->
+<div class="container">
+    <div class="disclaimer">
+        <p>
+            This is an unofficial fan concept project. The Elder Scrolls is a registered trademark of Bethesda Softworks LLC. All game-related assets, names, and intellectual property belong to their respective owners. Background artwork used for concept purposes only. Music is from The Elder Scrolls V: Skyrim (composed by Jeremy Soule) — used for non-commercial, educational purposes. Sound effects generated with ElevenLabs AI. This project is not affiliated with or endorsed by Bethesda Softworks or ZeniMax Media.
+        </p>
+    </div>
+</div>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+    <div class="container">
+        <div class="row">
+            <div>
+                <h2 class="col-heading reveal" data-reveal>Let's work together</h2>
+            </div>
+            <div class="col-body">
+                <p class="contact-text reveal" data-reveal>
+                    If you have a project in mind, or would like to chat, shoot me an email at
+                    <a href="mailto:you@example.com">you@example.com</a>. I'd love to hear from you.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-links">
+            <a href="../index.html">Work</a>
+            <span class="sep">/</span>
+            <a href="#" target="_blank">Resume</a>
+            <span class="sep">/</span>
+            <a href="https://www.linkedin.com/in/fady-neddar-0b409b3a3/" target="_blank">LinkedIn</a>
+        </div>
+        <a href="#top" class="back-top" id="back-top">↑ Back to Top</a>
+    </div>
+</footer>
+
+<script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    function runLoader() {
+        const loader = document.getElementById('loader');
+        const mark = document.getElementById('loader-mark');
+        const counter = document.querySelector('.loader-counter');
+        const numEl = document.getElementById('loader-num');
+        const bar = document.getElementById('loader-bar');
+
+        const tl = gsap.timeline({
+            onComplete: () => {
+                document.body.classList.remove('is-loading');
+                runIntro();
+            }
+        });
+
+        tl.to([mark, counter], { opacity: 1, duration: 0.4, stagger: 0.05, ease: 'power2.out' });
+
+        const counterObj = { val: 0 };
+        tl.to(counterObj, {
+            val: 100, duration: 1.2, ease: 'power2.inOut',
+            onUpdate: () => { numEl.textContent = String(Math.floor(counterObj.val)).padStart(3, '0'); }
+        }, '-=0.2');
+        tl.to(bar, { scaleX: 1, duration: 1.2, ease: 'power2.inOut' }, '<');
+        tl.to({}, { duration: 0.1 });
+        tl.to([mark, counter], { opacity: 0, duration: 0.25, ease: 'power2.in' });
+        tl.to(loader, { yPercent: -100, duration: 0.9, ease: 'power3.inOut' }, '-=0.05');
+    }
+
+    function runIntro() {
+        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+        tl.fromTo('[data-nav]', { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.05 });
+
+        const title = document.getElementById('project-title');
+        if (title) {
+            const html = title.innerHTML;
+            title.innerHTML = `<span style="display:block;overflow:hidden;line-height:1.05;padding-bottom:0.05em;"><span class="title-inner" style="display:block;">${html}</span></span>`;
+            gsap.set('.title-inner', { yPercent: 110 });
+            tl.to('.title-inner', { yPercent: 0, duration: 1, ease: 'power3.out' }, '-=0.4');
+        }
+    }
+
+    function initScrollReveals() {
+        document.querySelectorAll('[data-reveal]').forEach(el => {
+            gsap.fromTo(el,
+                { opacity: 0, y: 30 },
+                { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
+                    scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' }
+                }
+            );
+        });
+
+        document.querySelectorAll('[data-reveal-image]').forEach(el => {
+            gsap.fromTo(el,
+                { opacity: 0, y: 60, scale: 0.98 },
+                { opacity: 1, y: 0, scale: 1, duration: 1, ease: 'power3.out',
+                    scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' }
+                }
+            );
+        });
+    }
+
+    function initMobileMenu() {
+        const toggle = document.getElementById('nav-toggle');
+        const menu = document.getElementById('mobile-menu');
+        const links = menu.querySelectorAll('[data-menu-link]');
+
+        function open() {
+            toggle.classList.add('is-open');
+            menu.classList.add('is-open');
+            menu.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+        function close() {
+            toggle.classList.remove('is-open');
+            menu.classList.remove('is-open');
+            menu.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        }
+
+        toggle.addEventListener('click', () => menu.classList.contains('is-open') ? close() : open());
+        links.forEach(link => link.addEventListener('click', close));
+        window.addEventListener('resize', () => { if (window.innerWidth > 900 && menu.classList.contains('is-open')) close(); });
+    }
+
+    document.getElementById('back-top').addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    window.addEventListener('load', () => {
+        initMobileMenu();
+        initScrollReveals();
+        runLoader();
+    });
+</script>
+
+</body>
+</html>
