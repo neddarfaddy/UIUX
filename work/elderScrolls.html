@@ -235,6 +235,44 @@
             width: 100%; height: 100%;
             object-fit: cover; display: block;
         }
+
+
+        /* ES PAIN POINTS */
+        .es-pain-grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            gap: 2px; background: var(--border);
+            border: 1px solid var(--border); margin-top: 48px;
+        }
+        .es-pain-item {
+            background: #fafafa; padding: 36px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .es-pain-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .es-pain-id { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+        .es-pain-sev {
+            font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+            font-weight: 700; padding: 3px 8px; border-radius: 2px;
+        }
+        .es-pain-sev.critical { background: #fee; color: #cc3333; }
+        .es-pain-sev.high { background: #fff3e0; color: #e07000; }
+        .es-pain-sev.medium { background: #f0f4ff; color: var(--accent); }
+        .es-pain-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+        .es-pain-desc { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+        @media (max-width: 900px) { .es-pain-grid { grid-template-columns: 1fr; } .es-pain-item { padding: 24px; } }
+        /* IMAGE HOVER ZOOM — desktop only */
+        @media (hover: hover) {
+            .image-frame {
+                overflow: hidden;
+            }
+            .image-frame img {
+                transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                will-change: transform;
+                transform-origin: center center;
+            }
+            .image-frame:hover img {
+                transform: scale(1.07);
+            }
+        }
         .image-caption {
             text-align: center;
             font-size: 11px; letter-spacing: 0.2em;
@@ -283,6 +321,53 @@
         .btn-prototype-arrow { font-size: 16px; transition: transform 0.4s var(--ease); }
         .btn-prototype:hover .btn-prototype-arrow { transform: translate(4px, -4px); }
 
+
+        /* CONTACT FORM */
+        .contact-form { margin-top: 40px; display: flex; flex-direction: column; gap: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-field { display: flex; flex-direction: column; gap: 8px; }
+        .form-field label { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+        .form-field input,
+        .form-field textarea {
+            width: 100%; padding: 14px 16px;
+            border: 1px solid var(--border);
+            background: var(--bg); color: var(--text);
+            font-family: inherit; font-size: 15px;
+            border-radius: 0; outline: none;
+            transition: border-color 0.2s ease;
+            -webkit-appearance: none;
+        }
+        .form-field input:focus,
+        .form-field textarea:focus { border-color: var(--text); }
+        .form-field textarea { resize: vertical; min-height: 120px; }
+        .form-submit {
+            display: inline-flex; align-items: center;
+            justify-content: space-between; gap: 32px;
+            background: var(--text); color: var(--bg);
+            padding: 18px 24px; font-size: 12px; font-weight: 600;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            border: none; cursor: pointer; border-radius: 0;
+            position: relative; overflow: hidden;
+            transition: color 0.3s ease; align-self: flex-start;
+            font-family: inherit;
+        }
+        .form-submit::before {
+            content: ''; position: absolute; inset: 0;
+            background: var(--accent);
+            transform: translateY(101%); transition: transform 0.5s var(--ease);
+        }
+        .form-submit > * { position: relative; z-index: 1; }
+        .form-submit:hover { color: var(--bg); }
+        .form-submit:hover::before { transform: translateY(0); }
+        .form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .form-status {
+            font-size: 13px; padding: 12px 16px;
+            border-radius: 0; display: none;
+        }
+        .form-status.show { display: block; }
+        .form-status.success { background: #e8f5ee; color: #1a7a4a; border: 1px solid #b2dfc4; }
+        .form-status.error { background: #fee; color: #cc3333; border: 1px solid #fcc; }
+        @media (max-width: 900px) { .form-row { grid-template-columns: 1fr; } .form-submit { width: 100%; } }
         /* DIVIDER */
         .section-divider {
             border: none;
@@ -614,6 +699,68 @@
                 </div>
             </div>
         </div>
+
+        <!-- PLAYER FEEDBACK PAIN POINTS -->
+        <div class="row" style="margin-top: 80px;">
+            <div>
+                <h2 class="col-heading reveal" data-reveal>Pain Points</h2>
+            </div>
+            <div>
+                <div class="col-body reveal" data-reveal>
+                    <p>The community was consistent. Across Oblivion, Skyrim, and Morrowind the same frustrations kept surfacing — console-ported controls, buried menus, lost identity. These six pain points from player feedback shaped every design decision.</p>
+                </div>
+                <div class="es-pain-grid reveal" data-reveal>
+                    <div class="es-pain-item">
+                        <div class="es-pain-header">
+                            <span class="es-pain-id">P-01</span>
+                            <span class="es-pain-sev critical">Critical</span>
+                        </div>
+                        <div class="es-pain-title">Console-First Design</div>
+                        <div class="es-pain-desc">Skyrim's UI was built for controller and never properly adapted for PC. Players needed a mod just to make the inventory usable on keyboard and mouse.</div>
+                    </div>
+                    <div class="es-pain-item">
+                        <div class="es-pain-header">
+                            <span class="es-pain-id">P-02</span>
+                            <span class="es-pain-sev critical">Critical</span>
+                        </div>
+                        <div class="es-pain-title">Submenu Overload</div>
+                        <div class="es-pain-desc">Oblivion buried everything in nested menus. Players had to navigate three or four layers deep to reach basic information they needed regularly.</div>
+                    </div>
+                    <div class="es-pain-item">
+                        <div class="es-pain-header">
+                            <span class="es-pain-id">P-03</span>
+                            <span class="es-pain-sev critical">Critical</span>
+                        </div>
+                        <div class="es-pain-title">Lost Identity</div>
+                        <div class="es-pain-desc">Skyrim went so minimal it lost the character Oblivion had. The community consistently described it as having aesthetics but no soul — generic rather than ES-specific.</div>
+                    </div>
+                    <div class="es-pain-item">
+                        <div class="es-pain-header">
+                            <span class="es-pain-id">P-04</span>
+                            <span class="es-pain-sev high">High</span>
+                        </div>
+                        <div class="es-pain-title">Hidden Active Effects</div>
+                        <div class="es-pain-desc">Morrowind showed every active effect at a glance. Skyrim hid this behind multiple menu levels, so players couldn't quickly see what was debuffing them mid-combat.</div>
+                    </div>
+                    <div class="es-pain-item">
+                        <div class="es-pain-header">
+                            <span class="es-pain-id">P-05</span>
+                            <span class="es-pain-sev medium">Medium</span>
+                        </div>
+                        <div class="es-pain-title">No Consistent System</div>
+                        <div class="es-pain-desc">Each ES game had a completely different UI language with no visual continuity. Players switching between titles had to relearn navigation from scratch every time.</div>
+                    </div>
+                    <div class="es-pain-item">
+                        <div class="es-pain-header">
+                            <span class="es-pain-id">P-06</span>
+                            <span class="es-pain-sev medium">Medium</span>
+                        </div>
+                        <div class="es-pain-title">Readability Under Pressure</div>
+                        <div class="es-pain-desc">Oblivion's ornate design was beautiful but hard to parse quickly. Players needed to distinguish actionable elements from decoration in seconds — the UI made that difficult.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -686,15 +833,14 @@
                     Skyrim gets credit for a clean HUD and it deserves it. But one thing that kept coming up in the community was how Morrowind actually handled active effects better. In Skyrim, if something is debuffing you mid-combat you have to go three levels into a menu to find out what. Morrowind showed everything at a glance.
                 </p>
                 <p class="reveal" data-reveal>
-                    The ES6 HUD keeps Skyrim's restraint. Bars at the bottom, compass and current objective top-right. But active effects are visible without opening anything.
+                    The ES6 HUD keeps Skyrim's restraint. Bars at the bottom, compass and current objective top-right. But active effects are visible without opening anything. There are two HUD states here: one with a Khajiit character in bright daylight, and one first-person view in a snowy mountain setting. Both show the same system in different contexts.
                 </p>
             </div>
         </div>
 
         <div class="image-stack">
-
             <div class="image-frame reveal" data-reveal-image>
-            <img src="../imgs/es-hero-2.png" alt="In-Game HUD" />
+                <img src="../imgs/es-hud.png" alt="In-Game HUD" />
             </div>
         </div>
     </div>
@@ -822,9 +968,41 @@
             </div>
             <div class="col-body">
                 <p class="contact-text reveal" data-reveal>
-                    If you have a project in mind, or would like to chat, shoot me an email at
-                    <a href="mailto:you@example.com">you@example.com</a>. I'd love to hear from you.
+                    If you have a project in mind or would like to chat, fill in the form below and I'll get back to you.
                 </p>
+
+                <form class="contact-form reveal" data-reveal id="contactForm" novalidate>
+                    <!-- Honeypot -->
+                    <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" id="cfHoney" />
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="cf-name">Name</label>
+                            <input type="text" id="cf-name" name="name" placeholder="Your name" required />
+                        </div>
+                        <div class="form-field">
+                            <label for="cf-email">Email</label>
+                            <input type="email" id="cf-email" name="email" placeholder="your@email.com" required />
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="cf-subject">Subject</label>
+                        <input type="text" id="cf-subject" name="subject" placeholder="What's this about?" required />
+                    </div>
+
+                    <div class="form-field">
+                        <label for="cf-message">Message</label>
+                        <textarea id="cf-message" name="message" placeholder="Tell me about your project..." required></textarea>
+                    </div>
+
+                    <div class="form-status" id="formStatus"></div>
+
+                    <button type="submit" class="form-submit" id="formBtn">
+                        <span id="formBtnLabel">Send Message</span>
+                        <span>↗</span>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -940,6 +1118,66 @@
         initScrollReveals();
         runLoader();
     });
+
+    // ── CONTACT FORM ──
+    (function() {
+        const form = document.getElementById('contactForm');
+        const btn = document.getElementById('formBtn');
+        const label = document.getElementById('formBtnLabel');
+        const status = document.getElementById('formStatus');
+        if (!form) return;
+
+        const ENDPOINT = 'https://formsubmit.co/ajax/neddarfaddy00@gmail.com';
+
+        function showStatus(type, msg) {
+            status.className = 'form-status show ' + type;
+            status.textContent = msg;
+        }
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Honeypot check
+            if (document.getElementById('cfHoney').value) return;
+
+            // Validation
+            const name = form.name.value.trim();
+            const email = form.email.value.trim();
+            const subject = form.subject.value.trim();
+            const message = form.message.value.trim();
+
+            if (!name || !email || !subject || !message) {
+                showStatus('error', 'Please fill in all fields.');
+                return;
+            }
+
+            btn.disabled = true;
+            label.textContent = 'Sending...';
+            status.className = 'form-status';
+
+            try {
+                const res = await fetch(ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ name, email, subject, message, _subject: 'Portfolio enquiry: ' + subject })
+                });
+
+                const data = await res.json();
+
+                if (data.success === 'true' || data.success === true) {
+                    showStatus('success', 'Message sent! I will get back to you shortly.');
+                    form.reset();
+                } else {
+                    showStatus('error', 'Something went wrong. Please email me directly at neddarfaddy00@gmail.com');
+                }
+            } catch(err) {
+                showStatus('error', 'Something went wrong. Please email me directly at neddarfaddy00@gmail.com');
+            } finally {
+                btn.disabled = false;
+                label.textContent = 'Send Message';
+            }
+        });
+    })();
 </script>
 
 </body>

@@ -4,511 +4,300 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#ffffff" />
-
     <title>Marathon UI Redesign — Fady Neddar</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-
     <style>
-        /* ============================================
-           DESIGN TOKENS
-           ============================================ */
         :root {
-            --bg: #ffffff;
-            --text: #111111;
-            --text-muted: #6b6b6b;
-            --border: #ececec;
-            --accent: #003cff;
-            --max-width: 1280px;
-            --gutter: 48px;
-            --col-left: 320px;
-            --col-gap: 80px;
+            --bg: #ffffff; --text: #111111; --text-muted: #6b6b6b;
+            --border: #ececec; --accent: #003cff; --max-width: 1280px;
+            --gutter: 48px; --col-left: 320px; --col-gap: 80px;
             --ease: cubic-bezier(0.65, 0, 0.35, 1);
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-
         body {
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.55;
-            font-size: 16px;
-            -webkit-font-smoothing: antialiased;
-            letter-spacing: -0.005em;
-            overflow-x: hidden;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.55;
+            font-size: 16px; -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.005em; overflow-x: hidden;
         }
-
-        body.is-loading {
-            overflow: hidden;
-        }
-        body.is-loading .reveal-on-load {
-            opacity: 0;
-        }
-
+        body.is-loading { overflow: hidden; }
+        body.is-loading .reveal-on-load { opacity: 0; }
         a { color: inherit; text-decoration: none; }
+        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--gutter); }
 
-        .container {
-            max-width: var(--max-width);
-            margin: 0 auto;
-            padding: 0 var(--gutter);
-        }
+        /* LOADER */
+        .loader { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 24px; }
+        .loader-mark { font-size: 14px; font-weight: 700; opacity: 0; }
+        .loader-counter { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; display: flex; gap: 6px; opacity: 0; }
+        .loader-bar { position: absolute; bottom: 0; left: 0; height: 1px; width: 100%; background: var(--text); transform-origin: left; transform: scaleX(0); }
 
-        /* ============================================
-           LOADER
-           ============================================ */
-        .loader {
-            position: fixed;
-            inset: 0;
-            background: var(--bg);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .loader-mark {
-            font-size: 14px;
-            font-weight: 700;
-            opacity: 0;
-        }
-
-        .loader-counter {
-            font-size: 11px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: var(--text-muted);
-            font-variant-numeric: tabular-nums;
-            display: flex;
-            gap: 6px;
-            opacity: 0;
-        }
-
-        .loader-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 1px;
-            width: 100%;
-            background: var(--text);
-            transform-origin: left;
-            transform: scaleX(0);
-        }
-
-        /* ============================================
-           NAVIGATION
-           ============================================ */
-        nav {
-            padding: 28px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 10;
-        }
-
+        /* NAV */
+        nav { padding: 28px 0; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
         .nav-logo { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
-
-        .nav-links {
-            display: flex;
-            gap: 40px;
-            list-style: none;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-        }
+        .nav-links { display: flex; gap: 40px; list-style: none; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
         .nav-links a { color: var(--text-muted); transition: color 0.2s ease; }
         .nav-links a:hover { color: var(--text); }
-
-        .nav-toggle {
-            display: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            margin: -8px;
-            position: relative;
-            width: 32px;
-            height: 32px;
-            z-index: 60;
-        }
-        .nav-toggle span {
-            display: block;
-            position: absolute;
-            left: 6px;
-            right: 6px;
-            height: 1.5px;
-            background: var(--text);
-            transition: transform 0.4s var(--ease), top 0.4s var(--ease);
-        }
+        .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; margin: -8px; position: relative; width: 32px; height: 32px; z-index: 60; }
+        .nav-toggle span { display: block; position: absolute; left: 6px; right: 6px; height: 1.5px; background: var(--text); transition: transform 0.4s var(--ease), top 0.4s var(--ease); }
         .nav-toggle span:nth-child(1) { top: 11px; }
         .nav-toggle span:nth-child(2) { top: 20px; }
         .nav-toggle.is-open span:nth-child(1) { top: 15px; transform: rotate(45deg); }
         .nav-toggle.is-open span:nth-child(2) { top: 15px; transform: rotate(-45deg); }
 
-        .mobile-menu {
-            position: fixed;
-            inset: 0;
-            background: var(--bg);
-            z-index: 50;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 100px var(--gutter) 48px;
-            clip-path: inset(0 0 100% 0);
-            transition: clip-path 0.6s var(--ease);
-            visibility: hidden;
-        }
+        /* MOBILE MENU */
+        .mobile-menu { position: fixed; inset: 0; background: var(--bg); z-index: 50; display: flex; flex-direction: column; justify-content: space-between; padding: 100px var(--gutter) 48px; clip-path: inset(0 0 100% 0); transition: clip-path 0.6s var(--ease); visibility: hidden; }
         .mobile-menu.is-open { clip-path: inset(0 0 0 0); visibility: visible; }
-
-        .mobile-menu-links {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .mobile-menu-links a {
-            font-size: 44px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            line-height: 1.1;
-            display: inline-block;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease, transform 0.5s var(--ease);
-        }
-        .mobile-menu.is-open .mobile-menu-links a {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .mobile-menu.is-open .mobile-menu-links a:nth-child(1) { transition-delay: 0.25s; }
-        .mobile-menu.is-open .mobile-menu-links a:nth-child(2) { transition-delay: 0.32s; }
-        .mobile-menu.is-open .mobile-menu-links a:nth-child(3) { transition-delay: 0.39s; }
-
-        .mobile-menu-footer {
-            font-size: 11px;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: var(--text-muted);
-            display: flex;
-            justify-content: space-between;
-            opacity: 0;
-            transition: opacity 0.5s ease 0.5s;
-        }
+        .mobile-menu-links { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .mobile-menu-links a { font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; display: inline-block; opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s var(--ease); }
+        .mobile-menu.is-open .mobile-menu-links a { opacity: 1; transform: translateY(0); }
+        .mobile-menu.is-open .mobile-menu-links li:nth-child(1) a { transition-delay: 0.25s; }
+        .mobile-menu.is-open .mobile-menu-links li:nth-child(2) a { transition-delay: 0.32s; }
+        .mobile-menu.is-open .mobile-menu-links li:nth-child(3) a { transition-delay: 0.39s; }
+        .mobile-menu-footer { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); display: flex; justify-content: space-between; opacity: 0; transition: opacity 0.5s ease 0.5s; }
         .mobile-menu.is-open .mobile-menu-footer { opacity: 1; }
 
-        /* Back link in nav */
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: var(--text-muted);
-            transition: gap 0.3s var(--ease), color 0.2s ease;
-        }
-        .back-link:hover {
-            gap: 10px;
-            color: var(--text);
-        }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); transition: gap 0.3s var(--ease), color 0.2s ease; }
+        .back-link:hover { gap: 10px; color: var(--text); }
 
-        /* ============================================
-           ROW LAYOUT
-           ============================================ */
-        .row {
-            display: grid;
-            grid-template-columns: var(--col-left) 1fr;
-            gap: var(--col-gap);
-            align-items: start;
-        }
-
-        .col-heading {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.015em;
-            line-height: 1.2;
-        }
-
-        .col-body p {
-            font-size: 16px;
-            line-height: 1.65;
-            margin-bottom: 16px;
-        }
+        /* LAYOUT */
+        .row { display: grid; grid-template-columns: var(--col-left) 1fr; gap: var(--col-gap); align-items: start; }
+        .col-heading { font-size: 28px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.2; }
+        .col-body p { font-size: 16px; line-height: 1.65; margin-bottom: 16px; }
         .col-body p:last-child { margin-bottom: 0; }
-
-        .col-body .muted-note {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-top: 24px;
-        }
-
-        /* ============================================
-           INTRO
-           ============================================ */
-        .intro-content {
-            display: grid;
-            grid-template-columns: 1fr 200px;
-            gap: 64px;
-            align-items: start;
-        }
-
-        .meta-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .meta-block .meta-label {
-            font-size: 11px;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .meta-block .meta-value {
-            font-size: 13px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        /* Project hero title */
-        .project-title {
-            font-size: 64px;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            line-height: 1;
-        }
-
-        /* ============================================
-           SECTIONS
-           ============================================ */
+        .intro-content { display: grid; grid-template-columns: 1fr 200px; gap: 64px; align-items: start; }
+        .meta-stack { display: flex; flex-direction: column; gap: 24px; }
+        .meta-block .meta-label { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+        .meta-block .meta-value { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; color: var(--text); }
+        .project-title { font-size: 64px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
         .intro-section { padding: 80px 0 60px; }
         .body-section { padding: 60px 0; }
 
-        /* ============================================
-           IMAGES
-           ============================================ */
-        .image-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin: 40px 0;
-        }
+        /* VIDEO */
+        .video-wrap { width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 0; overflow: hidden; margin: 40px 0; position: relative; }
 
-        .image-frame {
+        /* IMAGES */
+        .image-stack { display: flex; flex-direction: column; gap: 16px; margin: 40px 0; }
+        .image-row { display: grid; gap: 16px; }
+        .image-row.cols-2 { grid-template-columns: 1fr 1fr; }
+        .image-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .image-frame { width: 100%; aspect-ratio: 16 / 9; background: #f4f4f4; border-radius: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .image-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* IMAGE HOVER ZOOM — desktop only */
+        @media (hover: hover) {
+            .image-frame {
+                overflow: hidden;
+            }
+            .image-frame img {
+                transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                will-change: transform;
+                transform-origin: center center;
+            }
+            .image-frame:hover img {
+                transform: scale(1.07);
+            }
+        }
+        .image-caption { text-align: center; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); margin: 8px 0; }
+
+        /* BUTTON */
+        .btn-prototype { display: inline-flex; align-items: center; justify-content: space-between; gap: 32px; background: var(--text); color: var(--bg); padding: 18px 24px; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; border-radius: 2px; margin-top: 32px; position: relative; overflow: hidden; transition: color 0.3s ease; }
+        .btn-prototype::before { content: ''; position: absolute; inset: 0; background: var(--accent); transform: translateY(101%); transition: transform 0.5s var(--ease); }
+        .btn-prototype > * { position: relative; z-index: 1; }
+        .btn-prototype:hover { color: var(--bg); }
+        .btn-prototype:hover::before { transform: translateY(0); }
+        .btn-prototype-arrow { font-size: 16px; transition: transform 0.4s var(--ease); }
+        .btn-prototype:hover .btn-prototype-arrow { transform: translate(4px, -4px); }
+
+        /* RESEARCH */
+        .research-section { padding: 80px 0; background: #fafafa; margin: 60px 0; }
+
+        /* PAIN POINTS */
+        .pain-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px; background: var(--border); border: 1px solid var(--border); margin-top: 48px; }
+        .pain-item { background: #fafafa; padding: 36px; display: flex; flex-direction: column; gap: 12px; }
+        .pain-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .pain-id { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+        .pain-severity { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700; padding: 3px 8px; border-radius: 2px; }
+        .pain-severity.critical { background: #fee; color: #cc3333; }
+        .pain-severity.high { background: #fff3e0; color: #e07000; }
+        .pain-severity.medium { background: #f0f4ff; color: var(--accent); }
+        .pain-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+        .pain-desc { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+
+        /* QUOTES */
+        .quotes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--border); border: 1px solid var(--border); margin-top: 48px; }
+        .quote-item { background: #fafafa; padding: 36px; }
+        .quote-text { font-size: 14px; line-height: 1.65; font-style: italic; color: var(--text); padding-left: 20px; border-left: 2px solid var(--text); margin-bottom: 16px; display: block; }
+        .quote-meta { display: flex; justify-content: space-between; align-items: center; }
+        .quote-source { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; color: var(--accent); }
+        .quote-tag { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+
+        /* TASK FLOWS */
+        .taskflow-stack { display: flex; flex-direction: column; gap: 32px; margin-top: 48px; }
+        .taskflow-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; }
+        .taskflow-frame { width: 100%; background: #f4f4f4; border-radius: 0; overflow: hidden; }
+        .taskflow-frame img { width: 100%; display: block; }
+
+        /* BEFORE/AFTER SLIDER */
+        .slider-wrap {
+            position: relative;
             width: 100%;
             aspect-ratio: 16 / 9;
-            background: #f4f4f4;
-            border-radius: 6px;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin: 40px 0;
+            cursor: ew-resize;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: pan-y;
         }
-
-        .image-frame img,
-        .image-frame video {
-            width: 100%;
-            height: 100%;
+        .slider-after,
+        .slider-before {
+            position: absolute;
+            inset: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+        }
+        .slider-after img,
+        .slider-before img {
+            width: 100%; height: 100%;
             object-fit: cover;
             display: block;
         }
-
-        .image-frame.placeholder {
-            background:
-                    repeating-linear-gradient(
-                            45deg,
-                            #f0f0f0 0,
-                            #f0f0f0 14px,
-                            #e6e6e6 14px,
-                            #e6e6e6 28px
-                    );
-            color: #888;
-            font-size: 12px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            text-align: center;
-            padding: 24px;
-            font-weight: 600;
+        .slider-before { will-change: clip-path; }
+        .slider-handle {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 2px;
+            background: #fff;
+            z-index: 20;
+            transform: translateX(-50%);
+            will-change: left;
+            pointer-events: none;
         }
-
-        .image-caption {
-            text-align: center;
-            font-size: 11px;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin: 8px 0;
+        .slider-knob {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 44px; height: 44px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.25);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            pointer-events: none;
         }
-
-        .external-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 16px;
-            color: var(--accent);
-            font-size: 12px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            font-weight: 600;
-            position: relative;
-            transition: gap 0.3s var(--ease);
+        .slider-wrap.dragging .slider-knob {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 4px 28px rgba(0,0,0,0.35);
         }
-        .external-link:hover { gap: 10px; }
-
-        .col-empty { }
-        .sub-project { margin-bottom: 24px; }
-
-        /* ============================================
-           CONTACT
-           ============================================ */
-        .contact {
-            padding: 120px 0;
-            border-top: 1px solid var(--border);
-            margin-top: 80px;
+        .slider-label {
+            position: absolute; top: 16px;
+            font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+            font-weight: 700; padding: 5px 11px; border-radius: 2px;
+            pointer-events: none; z-index: 10;
         }
+        .slider-label.before { left: 16px; background: rgba(0,0,0,0.55); color: #fff; }
+        .slider-label.after { right: 16px; background: rgba(0,60,255,0.85); color: #fff; }
 
-        .contact-text {
-            font-size: 16px;
-            line-height: 1.55;
-            max-width: 640px;
-        }
 
-        .contact-text a {
-            color: var(--accent);
-            font-weight: 500;
+        /* CONTACT FORM */
+        .contact-form { margin-top: 40px; display: flex; flex-direction: column; gap: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-field { display: flex; flex-direction: column; gap: 8px; }
+        .form-field label { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+        .form-field input,
+        .form-field textarea {
+            width: 100%; padding: 14px 16px;
+            border: 1px solid var(--border);
+            background: var(--bg); color: var(--text);
+            font-family: inherit; font-size: 15px;
+            border-radius: 0; outline: none;
+            transition: border-color 0.2s ease;
+            -webkit-appearance: none;
         }
+        .form-field input:focus,
+        .form-field textarea:focus { border-color: var(--text); }
+        .form-field textarea { resize: vertical; min-height: 120px; }
+        .form-submit {
+            display: inline-flex; align-items: center;
+            justify-content: space-between; gap: 32px;
+            background: var(--text); color: var(--bg);
+            padding: 18px 24px; font-size: 12px; font-weight: 600;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            border: none; cursor: pointer; border-radius: 0;
+            position: relative; overflow: hidden;
+            transition: color 0.3s ease; align-self: flex-start;
+            font-family: inherit;
+        }
+        .form-submit::before {
+            content: ''; position: absolute; inset: 0;
+            background: var(--accent);
+            transform: translateY(101%); transition: transform 0.5s var(--ease);
+        }
+        .form-submit > * { position: relative; z-index: 1; }
+        .form-submit:hover { color: var(--bg); }
+        .form-submit:hover::before { transform: translateY(0); }
+        .form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+        .form-status {
+            font-size: 13px; padding: 12px 16px;
+            border-radius: 0; display: none;
+        }
+        .form-status.show { display: block; }
+        .form-status.success { background: #e8f5ee; color: #1a7a4a; border: 1px solid #b2dfc4; }
+        .form-status.error { background: #fee; color: #cc3333; border: 1px solid #fcc; }
+        @media (max-width: 900px) { .form-row { grid-template-columns: 1fr; } .form-submit { width: 100%; } }
+        /* DIVIDER */
+        .section-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+        /* DISCLAIMER */
+        .disclaimer { padding: 40px 0; border-top: 1px solid var(--border); }
+        .disclaimer p { font-size: 12px; color: var(--text-muted); line-height: 1.7; max-width: 720px; }
+
+        /* CONTACT */
+        .contact { padding: 120px 0; border-top: 1px solid var(--border); margin-top: 80px; }
+        .contact-text { font-size: 16px; line-height: 1.55; max-width: 640px; }
+        .contact-text a { color: var(--accent); font-weight: 500; }
         .contact-text a:hover { opacity: 0.7; }
 
-        /* ============================================
-           FOOTER
-           ============================================ */
-        footer {
-            padding: 32px 0 48px;
-            border-top: 1px solid var(--border);
-            font-size: 12px;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        .footer-inner {
-            max-width: var(--max-width);
-            margin: 0 auto;
-            padding: 0 var(--gutter);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
+        /* FOOTER */
+        footer { padding: 32px 0 48px; border-top: 1px solid var(--border); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; color: var(--text-muted); }
+        .footer-inner { max-width: var(--max-width); margin: 0 auto; padding: 0 var(--gutter); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
         .footer-links { display: flex; gap: 8px; }
         .footer-links a { color: var(--accent); }
         .footer-links a:hover { opacity: 0.7; }
         .footer-links .sep { color: var(--text-muted); }
         footer .back-top { color: var(--accent); cursor: pointer; }
 
-        /* ============================================
-           REVEAL UTILS
-           ============================================ */
         .reveal { opacity: 0; transform: translateY(40px); }
 
-        /* ============================================
-           RESPONSIVE
-           ============================================ */
+        /* RESPONSIVE */
         @media (max-width: 900px) {
-            :root {
-                --gutter: 24px;
-                --col-gap: 32px;
-            }
-
+            :root { --gutter: 24px; --col-gap: 32px; }
             nav { padding: 20px 0; }
             .nav-links { display: none; }
             .nav-toggle { display: block; }
-
-            .row {
-                grid-template-columns: 1fr;
-                gap: 24px;
-            }
-
-            .intro-content {
-                grid-template-columns: 1fr;
-                gap: 32px;
-            }
-
+            .row { grid-template-columns: 1fr; gap: 24px; }
+            .intro-content { grid-template-columns: 1fr; gap: 32px; }
             .intro-section { padding: 40px 0 32px; }
             .body-section { padding: 40px 0; }
-
-            .project-title {
-                font-size: 44px;
-                letter-spacing: -0.025em;
-            }
-
-            .col-heading {
-                font-size: 24px;
-                letter-spacing: -0.02em;
-            }
-
-            .col-body p { font-size: 16px; line-height: 1.6; }
-
-            /* Meta blocks become a tighter horizontal grid on mobile */
-            .meta-stack {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 20px 24px;
-            }
-
-            .image-frame {
-                aspect-ratio: 4 / 3;
-                border-radius: 4px;
-            }
-
-            .image-stack {
-                gap: 12px;
-                margin: 24px 0;
-            }
-
-            .contact {
-                padding: 64px 0;
-                margin-top: 40px;
-            }
-
-            footer { padding: 24px 0 32px; }
-            .footer-inner { font-size: 11px; gap: 12px; }
+            .project-title { font-size: 44px; }
+            .col-heading { font-size: 24px; }
+            .meta-stack { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 24px; }
+            .image-row.cols-2, .image-row.cols-3 { grid-template-columns: 1fr; }
+            .pain-grid { grid-template-columns: 1fr; }
+            .quotes-grid { grid-template-columns: 1fr; }
+            .pain-item, .quote-item { padding: 24px; }
+            .research-section { padding: 48px 0; margin: 40px 0; }
+            .contact { padding: 64px 0; margin-top: 40px; }
+            .btn-prototype { width: 100%; }
         }
-
-        @media (max-width: 480px) {
-            .project-title { font-size: 38px; }
-            .mobile-menu-links a { font-size: 36px; }
-            .meta-stack { grid-template-columns: 1fr 1fr; }
-        }
-
+        @media (max-width: 480px) { .project-title { font-size: 38px; } }
         @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                transition-duration: 0.01ms !important;
-            }
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
             .loader { display: none; }
             .reveal { opacity: 1 !important; transform: none !important; }
         }
@@ -516,31 +305,21 @@
 </head>
 <body class="is-loading">
 
-<!-- LOADER -->
 <div class="loader" id="loader" aria-hidden="true">
-    <div class="loader-mark" id="loader-mark">Marathon UI</div>
-    <div class="loader-counter">
-        <span id="loader-num">000</span>
-        <span>—</span>
-        <span>100</span>
-    </div>
+    <div class="loader-mark" id="loader-mark">Marathon</div>
+    <div class="loader-counter"><span id="loader-num">000</span><span>—</span><span>100</span></div>
     <div class="loader-bar" id="loader-bar"></div>
 </div>
 
-<!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
     <ul class="mobile-menu-links">
         <li><a href="../index.html#work" data-menu-link>Work</a></li>
         <li><a href="#" data-menu-link>Resume</a></li>
-        <li><a href="../index.html#about" data-menu-link>Contact</a></li>
+        <li><a href="../index.html#contact" data-menu-link>Contact</a></li>
     </ul>
-    <div class="mobile-menu-footer">
-        <span>Oran, Algeria</span>
-        <span>2026 ©</span>
-    </div>
+    <div class="mobile-menu-footer"><span>Oran, Algeria</span><span>2026 ©</span></div>
 </div>
 
-<!-- NAV -->
 <header>
     <div class="container">
         <nav>
@@ -548,12 +327,9 @@
             <ul class="nav-links reveal-on-load" data-nav>
                 <li><a href="../index.html#work">Work</a></li>
                 <li><a href="#" target="_blank">Resume</a></li>
-                <li><a href="../index.html#about">About</a></li>
+                <li><a href="../index.html#contact">Contact</a></li>
             </ul>
-            <button class="nav-toggle reveal-on-load" id="nav-toggle" aria-label="Open menu" data-nav>
-                <span></span>
-                <span></span>
-            </button>
+            <button class="nav-toggle reveal-on-load" id="nav-toggle" aria-label="Open menu" data-nav><span></span><span></span></button>
         </nav>
     </div>
 </header>
@@ -564,153 +340,271 @@
         <div style="margin-bottom: 32px;">
             <a href="../index.html" class="back-link reveal-on-load" data-nav>← All Work</a>
         </div>
-
         <div class="row">
             <div>
                 <h1 class="project-title reveal-on-load" id="project-title" data-nav>Marathon</h1>
             </div>
-
             <div class="intro-content">
                 <div class="col-body">
-                    <p class="reveal" data-reveal>
-                        A speculative redesign of Marathon's in-game interface — exploring how Bungie's
-                        sci-fi extraction shooter could feel sharper, faster, and more legible at the
-                        moments that matter most: loadout, combat, and recovery.
-                    </p>
+                    <p class="reveal" data-reveal>Marathon launched with a UI that players immediately described as the game's biggest problem. Five or six menu levels to reach basic items. Loadout and Vault living in completely separate screens with no way to cross-reference them. A visual design that looked cool in screenshots but was nearly unreadable during play.</p>
+                    <p class="reveal" data-reveal>I ran a full UX audit — mapped pain points with severity ratings, pulled real player feedback from Steam and press, ran task flow analysis across four user journeys, then redesigned the entire interface from the ground up.</p>
+                    <a href="https://www.youtube.com/watch?v=EKMDqO-7CPE&t=157s" target="_blank" rel="noopener" class="btn-prototype reveal" data-reveal>
+                        <span>Watch the Breakdown</span>
+                        <span class="btn-prototype-arrow">↗</span>
+                    </a>
                 </div>
-
                 <div class="meta-stack">
-                    <div class="meta-block reveal" data-reveal>
-                        <div class="meta-label">Client</div>
-                        <div class="meta-value">Concept Project</div>
-                    </div>
-                    <div class="meta-block reveal" data-reveal>
-                        <div class="meta-label">Role</div>
-                        <div class="meta-value">UI/UX Design</div>
-                    </div>
-                    <div class="meta-block reveal" data-reveal>
-                        <div class="meta-label">Year</div>
-                        <div class="meta-value">2025</div>
-                    </div>
-                    <div class="meta-block reveal" data-reveal>
-                        <div class="meta-label">Tools</div>
-                        <div class="meta-value">Figma, AE</div>
-                    </div>
+                    <div class="meta-block reveal" data-reveal><div class="meta-label">Type</div><div class="meta-value">Concept Project</div></div>
+                    <div class="meta-block reveal" data-reveal><div class="meta-label">Role</div><div class="meta-value">UI/UX Design</div></div>
+                    <div class="meta-block reveal" data-reveal><div class="meta-label">Year</div><div class="meta-value">2025</div></div>
+                    <div class="meta-block reveal" data-reveal><div class="meta-label">Tools</div><div class="meta-value">Figma, After Effects</div></div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- HERO IMAGES -->
+<!-- VIDEO -->
 <section>
     <div class="container">
-        <div class="image-stack">
-            <div class="image-frame placeholder reveal" data-reveal-image>[ HERO IMAGE 1 ]</div>
-            <div class="image-frame placeholder reveal" data-reveal-image>[ HERO IMAGE 2 ]</div>
-            <div class="image-frame placeholder reveal" data-reveal-image>[ HERO IMAGE 3 ]</div>
-            <div class="image-frame placeholder reveal" data-reveal-image>[ HERO IMAGE 4 ]</div>
+        <div class="video-wrap reveal" data-reveal-image>
+            <iframe src="https://www.youtube.com/embed/EKMDqO-7CPE?rel=0&modestbranding=1" title="Marathon UI Redesign" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;position:absolute;top:0;left:0;"></iframe>
         </div>
     </div>
 </section>
 
-<!-- RESPONSIBILITIES -->
-<section class="body-section">
+<!-- RESEARCH -->
+<section class="research-section">
     <div class="container">
         <div class="row">
+            <div><h2 class="col-heading reveal" data-reveal>Research</h2></div>
             <div>
-                <h2 class="col-heading reveal" data-reveal>Responsibilities</h2>
+                <div class="col-body reveal" data-reveal>
+                    <p>Marathon's menu navigation was the game's most-criticised failure point. Players felt lost between disconnected screens, overwhelmed by visual clutter, and unable to complete basic tasks without passing through unnecessary layers. The UI was acting as an obstacle between players and the run.</p>
+                </div>
+                <div class="pain-grid reveal" data-reveal>
+                    <div class="pain-item">
+                        <div class="pain-header"><span class="pain-id">P-01</span><span class="pain-severity critical">Critical</span></div>
+                        <div class="pain-title">Navigation Depth</div>
+                        <div class="pain-desc">5 to 6 menu levels to reach common items. Vault, Codex, and Contracts are fully siloed with no cross-access.</div>
+                    </div>
+                    <div class="pain-item">
+                        <div class="pain-header"><span class="pain-id">P-02</span><span class="pain-severity critical">Critical</span></div>
+                        <div class="pain-title">Disconnected Flows</div>
+                        <div class="pain-desc">Loadout and Vault are separate with no link. Players prep a run without being able to see available gear.</div>
+                    </div>
+                    <div class="pain-item">
+                        <div class="pain-header"><span class="pain-id">P-03</span><span class="pain-severity critical">Critical</span></div>
+                        <div class="pain-title">Visual Overload</div>
+                        <div class="pain-desc">Every screen surfaces too much simultaneously. Players can't tell what's actionable from what's decorative.</div>
+                    </div>
+                    <div class="pain-item">
+                        <div class="pain-header"><span class="pain-id">P-04</span><span class="pain-severity high">High</span></div>
+                        <div class="pain-title">Tooltip Hunting</div>
+                        <div class="pain-desc">No comparison view. Reading stats requires hovering each item individually, forcing players to memorize between hovers.</div>
+                    </div>
+                    <div class="pain-item">
+                        <div class="pain-header"><span class="pain-id">P-05</span><span class="pain-severity medium">Medium</span></div>
+                        <div class="pain-title">No Shortcuts</div>
+                        <div class="pain-desc">No way to jump directly to key screens. Every session means re-navigating the same deep paths from scratch.</div>
+                    </div>
+                    <div class="pain-item">
+                        <div class="pain-header"><span class="pain-id">P-06</span><span class="pain-severity medium">Medium</span></div>
+                        <div class="pain-title">Controller Bias</div>
+                        <div class="pain-desc">UI appears designed controller-first. PC players get an awkward experience where mouse patterns feel unnatural.</div>
+                    </div>
+                </div>
             </div>
-            <div class="col-body">
-                <p class="reveal" data-reveal>
-                    Owned the redesign end-to-end — research into existing screens, system mapping,
-                    visual direction, component design, and motion explorations. Documented decisions
-                    in a public case study and YouTube breakdown.
-                </p>
-                <p class="muted-note reveal" data-reveal>
-                    Per-screen breakdowns are documented below.
-                </p>
+        </div>
+
+        <div class="row" style="margin-top: 80px;">
+            <div><h2 class="col-heading reveal" data-reveal>Player Feedback</h2></div>
+            <div>
+                <div class="quotes-grid reveal" data-reveal>
+                    <div class="quote-item">
+                        <span class="quote-text">"I will return this game until they change the UI. Why can I not multi select inventory items? Why is navigation in menus awful? This is literally insane for Bungie to have done."</span>
+                        <div class="quote-meta"><span class="quote-source">Steam</span><span class="quote-tag">Navigation</span></div>
+                    </div>
+                    <div class="quote-item">
+                        <span class="quote-text">"Marathon's UI is a headache that I fear will send me right back to Arc Raiders — tedious even for Bungie, grandmaster of ridiculous Destiny currencies."</span>
+                        <div class="quote-meta"><span class="quote-source">PC Gamer</span><span class="quote-tag">Overall UX</span></div>
+                    </div>
+                    <div class="quote-item">
+                        <span class="quote-text">"The loadout bars should just be on the main menu. I should be able to click armoury, vault etc from the first menu."</span>
+                        <div class="quote-meta"><span class="quote-source">Community</span><span class="quote-tag">IA Structure</span></div>
+                    </div>
+                    <div class="quote-item">
+                        <span class="quote-text">"I genuinely dread how the inventory screen looks and how disconnected it is from the Vault, like why?"</span>
+                        <div class="quote-meta"><span class="quote-source">Community</span><span class="quote-tag">Disconnected Flows</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 80px;">
+            <div><h2 class="col-heading reveal" data-reveal>Task Flow Analysis</h2></div>
+            <div>
+                <div class="col-body reveal" data-reveal>
+                    <p>To understand how broken the navigation actually was, I mapped four common user journeys through the original UI. Tasks that should take 2 to 3 steps required up to 21 depending on the path taken.</p>
+                </div>
+                <div class="taskflow-stack reveal" data-reveal>
+                    <div>
+                        <div class="taskflow-label">01 — Starting a Game</div>
+                        <div class="taskflow-frame"><img src="../imgs/marathon-taskflow-startgame.png" alt="Task Flow: Starting a Game" /></div>
+                    </div>
+                    <div>
+                        <div class="taskflow-label">02 — Changing Shells</div>
+                        <div class="taskflow-frame"><img src="../imgs/marathon-taskflow-shells.png" alt="Task Flow: Changing Shells" /></div>
+                    </div>
+                    <div>
+                        <div class="taskflow-label">03 — Changing Weapon Skins and Trying to Play</div>
+                        <div class="taskflow-frame"><img src="../imgs/marathon-taskflow-weaponskins.png" alt="Task Flow: Weapon Skins" /></div>
+                    </div>
+                    <div>
+                        <div class="taskflow-label">04 — Comparing Items in Inventory</div>
+                        <div class="taskflow-frame"><img src="../imgs/marathon-taskflow-compare.png" alt="Task Flow: Comparing Items" /></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- PROJECTS -->
+<hr class="section-divider">
+
+<!-- MAIN MENU -->
 <section class="body-section">
     <div class="container">
-
-        <div class="row sub-project">
-            <div>
-                <h2 class="col-heading reveal" data-reveal>Screens</h2>
-            </div>
+        <div class="row" style="margin-bottom: 40px;">
+            <div><h2 class="col-heading reveal" data-reveal>Main Menu</h2></div>
             <div class="col-body">
-                <p class="reveal" data-reveal>
-                    The HUD redesign focused on hierarchy: critical info reads in a glance, secondary
-                    state stays available without crowding the play space.
-                </p>
-                <p class="reveal" data-reveal>
-                    I explored typographic systems that hold up at speed, status icons drawn from a
-                    single geometric grid, and a color logic where blue carries identity, white
-                    carries data, and warning states earn their visual weight.
-                </p>
-                <a href="https://www.youtube.com/watch?v=EKMDqO-7CPE" target="_blank" rel="noopener" class="external-link reveal" data-reveal>↗ Watch the breakdown</a>
+                <p class="reveal" data-reveal>The original main menu was visually dense with no clear hierarchy between what was actionable and what was decorative. The redesign pulls navigation to the left with clear labels, and uses contextual hover states to surface map details, loadout preview, and gamemode info without leaving the screen.</p>
+                <p class="reveal" data-reveal>The party system and friends list are accessible directly from the main menu via the plus icon on the right — no separate social screen needed.</p>
+            </div>
+        </div>
+
+        <div class="reveal" data-reveal>
+            <div class="slider-wrap" id="slider-mm">
+                <div class="slider-after">
+                    <img src="../imgs/marathon-mm-mapinfo.png" alt="Redesigned Main Menu" />
+                </div>
+                <div class="slider-before" id="sb-mm" style="clip-path: inset(0 50% 0 0);">
+                    <img src="../imgs/marathon-before-mainmenu.png" alt="Original Main Menu" />
+                </div>
+                <span class="slider-label before">Before</span>
+                <span class="slider-label after">After</span>
+                <div class="slider-handle" id="sh-mm" style="left:50%;">
+                    <div class="slider-knob">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 8L2 5M2 5L5 2M2 5H10" stroke="#111" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 8L14 5M14 5L11 2M14 5H6" stroke="#111" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,6)"/></svg>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="image-stack">
-            <div class="image-frame placeholder reveal" data-reveal-image>[ SCREEN A ]</div>
-            <div class="image-frame placeholder reveal" data-reveal-image>[ SCREEN B ]</div>
-            <div class="image-frame placeholder reveal" data-reveal-image>[ SCREEN C ]</div>
-        </div>
-
-        <div class="row sub-project">
-            <div class="col-empty"></div>
-            <div class="col-body">
-                <p class="reveal" data-reveal>
-                    The loadout flow rebuilds Marathon's pre-drop screen around player intent — what
-                    am I bringing, what am I risking, how does it stack against my current run.
-                </p>
-                <p class="reveal" data-reveal>
-                    Every panel is keyboard-navigable first; controller and pointer inputs follow
-                    the same focus model so the screen reads consistently across platforms.
-                </p>
+            <div class="image-row cols-3">
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-mm-mapinfo.png" alt="Map Info Hover" /></div><p class="image-caption">Map Info Hover</p></div>
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-mm-loadout.png" alt="Loadout Hover" /></div><p class="image-caption">Loadout Hover</p></div>
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-mm-gamemode.png" alt="Gamemode Hover" /></div><p class="image-caption">Gamemode Hover</p></div>
+            </div>
+            <div class="image-row cols-3">
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-mm-party.png" alt="Party View" /></div><p class="image-caption">Party View</p></div>
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-mm-contract.png" alt="Contract Open" /></div><p class="image-caption">Contract Open</p></div>
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-mm-mapselect.png" alt="Map Selection" /></div><p class="image-caption">Map Selection</p></div>
+            </div>
+            <div class="image-row cols-2">
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-friendprofile.png" alt="Friend Profile" /></div><p class="image-caption">Friend Profile</p></div>
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-friendslist.png" alt="Friends List" /></div><p class="image-caption">Friends List</p></div>
             </div>
         </div>
-
-        <div class="image-stack">
-            <div class="image-frame placeholder reveal" data-reveal-image>[ LOADOUT A ]</div>
-            <div class="image-frame placeholder reveal" data-reveal-image>[ LOADOUT B ]</div>
-        </div>
-
     </div>
 </section>
 
-<!-- CONTACT -->
-<section class="contact" id="about">
+<hr class="section-divider">
+
+<!-- INVENTORY -->
+<section class="body-section">
+    <div class="container">
+        <div class="row" style="margin-bottom: 40px;">
+            <div><h2 class="col-heading reveal" data-reveal>Inventory &amp; Loadout</h2></div>
+            <div class="col-body">
+                <p class="reveal" data-reveal>The core problem was that Loadout and Vault were completely disconnected. You couldn't look at available gear while building a loadout — which is exactly when you need that information. The redesign merges these into one screen.</p>
+                <p class="reveal" data-reveal>The compare view directly addresses the tooltip-hunting problem. Select any two items and their stats appear side by side — no hovering, no memorizing.</p>
+            </div>
+        </div>
+
+        <div class="reveal" data-reveal>
+            <div class="slider-wrap" id="slider-inv">
+                <div class="slider-after">
+                    <img src="../imgs/marathon-inventory.png" alt="Redesigned Inventory" />
+                </div>
+                <div class="slider-before" id="sb-inv" style="clip-path: inset(0 50% 0 0);">
+                    <img src="../imgs/marathon-before-inventory.png" alt="Original Inventory" />
+                </div>
+                <span class="slider-label before">Before</span>
+                <span class="slider-label after">After</span>
+                <div class="slider-handle" id="sh-inv" style="left:50%;">
+                    <div class="slider-knob">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5 8L2 5M2 5L5 2M2 5H10" stroke="#111" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 8L14 5M14 5L11 2M14 5H6" stroke="#111" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,6)"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="image-stack">
+            <div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-inventory.png" alt="Inventory" /></div>
+            <div class="image-row cols-2">
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-inspect.png" alt="Weapon Inspect" /></div><p class="image-caption">Weapon Inspect</p></div>
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-compare.png" alt="Item Compare" /></div><p class="image-caption">Item Compare</p></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- CUSTOMIZATION -->
+<section class="body-section">
+    <div class="container">
+        <div class="row" style="margin-bottom: 40px;">
+            <div><h2 class="col-heading reveal" data-reveal>Customization</h2></div>
+            <div class="col-body">
+                <p class="reveal" data-reveal>Weapon customization and shell selection were buried deep in the original navigation. Here they live inside the inventory flow — reachable in two presses from the main menu. Shell selection gives a proper preview of each shell with abilities and traits visible before you commit.</p>
+            </div>
+        </div>
+        <div class="image-stack">
+            <div class="image-row cols-2">
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-weaponcust.png" alt="Weapon Customization" /></div><p class="image-caption">Weapon Customization</p></div>
+                <div><div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-shellselect.png" alt="Shell Select" /></div><p class="image-caption">Shell Select</p></div>
+            </div>
+            <div class="image-frame reveal" data-reveal-image><img src="../imgs/marathon-shellcust.png" alt="Shell Customization" /></div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="disclaimer">
+        <p>This is an unofficial fan concept project. Marathon is a trademark of Bungie, Inc. All game-related assets, names, and intellectual property belong to their respective owners. This project is not affiliated with or endorsed by Bungie, Inc. Created for portfolio and educational purposes only.</p>
+    </div>
+</div>
+
+<section class="contact" id="contact">
     <div class="container">
         <div class="row">
-            <div>
-                <h2 class="col-heading reveal" data-reveal>Let's work together</h2>
-            </div>
+            <div><h2 class="col-heading reveal" data-reveal>Let's work together</h2></div>
             <div class="col-body">
-                <p class="contact-text reveal" data-reveal>
-                    If you have a project in mind, or would like to chat, shoot me an email at
-                    <a href="mailto:you@example.com">you@example.com</a>. I'd love to hear from you.
-                </p>
+                <p class="contact-text reveal" data-reveal>If you have a project in mind, or would like to chat, shoot me an email at <a href="mailto:you@example.com">you@example.com</a>. I'd love to hear from you.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- FOOTER -->
 <footer>
     <div class="footer-inner">
         <div class="footer-links">
-            <a href="../index.html">Work</a>
-            <span class="sep">/</span>
-            <a href="#" target="_blank">Resume</a>
-            <span class="sep">/</span>
-            <a href="#" target="_blank">Twitter</a>
+            <a href="../index.html">Work</a><span class="sep">/</span>
+            <a href="#" target="_blank">Resume</a><span class="sep">/</span>
+            <a href="https://www.linkedin.com/in/fady-neddar-0b409b3a3/" target="_blank">LinkedIn</a>
         </div>
         <a href="#top" class="back-top" id="back-top">↑ Back to Top</a>
     </div>
@@ -719,180 +613,194 @@
 <script>
     gsap.registerPlugin(ScrollTrigger);
 
-    // ============================================
-    // LOADER
-    // ============================================
     function runLoader() {
         const loader = document.getElementById('loader');
         const mark = document.getElementById('loader-mark');
         const counter = document.querySelector('.loader-counter');
         const numEl = document.getElementById('loader-num');
         const bar = document.getElementById('loader-bar');
-
-        const tl = gsap.timeline({
-            onComplete: () => {
-                document.body.classList.remove('is-loading');
-                runIntro();
-            }
-        });
-
-        tl.to([mark, counter], {
-            opacity: 1,
-            duration: 0.4,
-            stagger: 0.05,
-            ease: 'power2.out'
-        });
-
-        const counterObj = { val: 0 };
-        tl.to(counterObj, {
-            val: 100,
-            duration: 1.2,
-            ease: 'power2.inOut',
-            onUpdate: () => {
-                numEl.textContent = String(Math.floor(counterObj.val)).padStart(3, '0');
-            }
-        }, '-=0.2');
-
-        tl.to(bar, {
-            scaleX: 1,
-            duration: 1.2,
-            ease: 'power2.inOut'
-        }, '<');
-
+        const tl = gsap.timeline({ onComplete: () => { document.body.classList.remove('is-loading'); runIntro(); } });
+        tl.to([mark, counter], { opacity: 1, duration: 0.4, stagger: 0.05, ease: 'power2.out' });
+        const obj = { val: 0 };
+        tl.to(obj, { val: 100, duration: 1.2, ease: 'power2.inOut', onUpdate: () => { numEl.textContent = String(Math.floor(obj.val)).padStart(3, '0'); } }, '-=0.2');
+        tl.to(bar, { scaleX: 1, duration: 1.2, ease: 'power2.inOut' }, '<');
         tl.to({}, { duration: 0.1 });
-
-        tl.to([mark, counter], {
-            opacity: 0,
-            duration: 0.25,
-            ease: 'power2.in'
-        });
-
-        tl.to(loader, {
-            yPercent: -100,
-            duration: 0.9,
-            ease: 'power3.inOut'
-        }, '-=0.05');
+        tl.to([mark, counter], { opacity: 0, duration: 0.25, ease: 'power2.in' });
+        tl.to(loader, { yPercent: -100, duration: 0.9, ease: 'power3.inOut' }, '-=0.05');
     }
 
-    // ============================================
-    // INTRO
-    // ============================================
     function runIntro() {
         const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-        // Nav
-        tl.fromTo('[data-nav]',
-            { opacity: 0, y: -10 },
-            { opacity: 1, y: 0, duration: 0.6, stagger: 0.05 }
-        );
-
-        // Project title — clip-reveal from below
+        tl.fromTo('[data-nav]', { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.05 });
         const title = document.getElementById('project-title');
         if (title) {
             const text = title.textContent;
             title.innerHTML = `<span style="display:inline-block;overflow:hidden;line-height:1;padding-bottom:0.05em;"><span class="title-inner" style="display:inline-block;">${text}</span></span>`;
             gsap.set('.title-inner', { yPercent: 110 });
-            tl.to('.title-inner', {
-                yPercent: 0,
-                duration: 1,
-                ease: 'power3.out'
-            }, '-=0.4');
+            tl.to('.title-inner', { yPercent: 0, duration: 1, ease: 'power3.out' }, '-=0.4');
         }
     }
 
-    // ============================================
-    // SCROLL REVEALS
-    // ============================================
     function initScrollReveals() {
         document.querySelectorAll('[data-reveal]').forEach(el => {
-            gsap.fromTo(el,
-                { opacity: 0, y: 30 },
-                {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.8,
-                    ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: el,
-                        start: 'top 88%',
-                        toggleActions: 'play none none none'
-                    }
-                }
-            );
+            gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' } });
         });
-
         document.querySelectorAll('[data-reveal-image]').forEach(el => {
-            gsap.fromTo(el,
-                { opacity: 0, y: 60, scale: 0.98 },
-                {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    duration: 1,
-                    ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: el,
-                        start: 'top 85%',
-                        toggleActions: 'play none none none'
-                    }
-                }
-            );
+            gsap.fromTo(el, { opacity: 0, y: 60, scale: 0.98 }, { opacity: 1, y: 0, scale: 1, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' } });
         });
     }
 
-    // ============================================
-    // MOBILE MENU
-    // ============================================
+    function initSlider(wrapId, beforeId, handleId) {
+        const wrap = document.getElementById(wrapId);
+        const before = document.getElementById(beforeId);
+        const handle = document.getElementById(handleId);
+        if (!wrap || !before || !handle) return;
+
+        let dragging = false;
+        let currentPct = 0.5;
+        let targetPct = 0.5;
+        let rafId = null;
+
+        function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+        function getPct(clientX) {
+            const rect = wrap.getBoundingClientRect();
+            return clamp((clientX - rect.left) / rect.width, 0.005, 0.995);
+        }
+
+        function setPosition(pct) {
+            const right = ((1 - pct) * 100).toFixed(3) + '%';
+            before.style.clipPath = 'inset(0 ' + right + ' 0 0)';
+            handle.style.left = (pct * 100).toFixed(3) + '%';
+        }
+
+        setPosition(0.5);
+
+        function animate() {
+            const diff = targetPct - currentPct;
+            if (Math.abs(diff) > 0.00005) {
+                currentPct += diff * (dragging ? 0.3 : 0.14);
+                setPosition(currentPct);
+                rafId = requestAnimationFrame(animate);
+            } else {
+                currentPct = targetPct;
+                setPosition(currentPct);
+                rafId = null;
+            }
+        }
+
+        function kick() { if (!rafId) rafId = requestAnimationFrame(animate); }
+
+        // Pointer events — works for both mouse and touch, handles capture natively
+        wrap.addEventListener('pointerdown', e => {
+            dragging = true;
+            wrap.classList.add('dragging');
+            wrap.setPointerCapture(e.pointerId);
+            targetPct = getPct(e.clientX);
+            kick();
+            e.preventDefault();
+        });
+
+        wrap.addEventListener('pointermove', e => {
+            if (!dragging) return;
+            targetPct = getPct(e.clientX);
+            kick();
+        });
+
+        wrap.addEventListener('pointerup', e => {
+            dragging = false;
+            wrap.classList.remove('dragging');
+            wrap.releasePointerCapture(e.pointerId);
+            kick();
+        });
+
+        wrap.addEventListener('pointercancel', e => {
+            dragging = false;
+            wrap.classList.remove('dragging');
+            kick();
+        });
+    }
+
     function initMobileMenu() {
         const toggle = document.getElementById('nav-toggle');
         const menu = document.getElementById('mobile-menu');
         const links = menu.querySelectorAll('[data-menu-link]');
-
-        function open() {
-            toggle.classList.add('is-open');
-            menu.classList.add('is-open');
-            menu.setAttribute('aria-hidden', 'false');
-            document.body.style.overflow = 'hidden';
-        }
-        function close() {
-            toggle.classList.remove('is-open');
-            menu.classList.remove('is-open');
-            menu.setAttribute('aria-hidden', 'true');
-            document.body.style.overflow = '';
-        }
-
-        toggle.addEventListener('click', () => {
-            if (menu.classList.contains('is-open')) close();
-            else open();
-        });
-
-        links.forEach(link => link.addEventListener('click', close));
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 900 && menu.classList.contains('is-open')) close();
-        });
+        function open() { toggle.classList.add('is-open'); menu.classList.add('is-open'); menu.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; }
+        function close() { toggle.classList.remove('is-open'); menu.classList.remove('is-open'); menu.setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }
+        toggle.addEventListener('click', () => menu.classList.contains('is-open') ? close() : open());
+        links.forEach(l => l.addEventListener('click', close));
+        window.addEventListener('resize', () => { if (window.innerWidth > 900 && menu.classList.contains('is-open')) close(); });
     }
 
-    // Back to top
-    document.getElementById('back-top').addEventListener('click', (e) => {
-        e.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    document.getElementById('back-top').addEventListener('click', e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
     window.addEventListener('load', () => {
         initMobileMenu();
         initScrollReveals();
         runLoader();
+        initSlider('slider-mm', 'sb-mm', 'sh-mm');
+        initSlider('slider-inv', 'sb-inv', 'sh-inv');
     });
 
-    setTimeout(() => {
-        if (document.body.classList.contains('is-loading')) {
-            initMobileMenu();
-            initScrollReveals();
-            runLoader();
-        }
-    }, 2000);
-</script>
+    // ── CONTACT FORM ──
+    (function() {
+        const form = document.getElementById('contactForm');
+        const btn = document.getElementById('formBtn');
+        const label = document.getElementById('formBtnLabel');
+        const status = document.getElementById('formStatus');
+        if (!form) return;
 
+        const ENDPOINT = 'https://formsubmit.co/ajax/neddarfaddy00@gmail.com';
+
+        function showStatus(type, msg) {
+            status.className = 'form-status show ' + type;
+            status.textContent = msg;
+        }
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Honeypot check
+            if (document.getElementById('cfHoney').value) return;
+
+            // Validation
+            const name = form.name.value.trim();
+            const email = form.email.value.trim();
+            const subject = form.subject.value.trim();
+            const message = form.message.value.trim();
+
+            if (!name || !email || !subject || !message) {
+                showStatus('error', 'Please fill in all fields.');
+                return;
+            }
+
+            btn.disabled = true;
+            label.textContent = 'Sending...';
+            status.className = 'form-status';
+
+            try {
+                const res = await fetch(ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ name, email, subject, message, _subject: 'Portfolio enquiry: ' + subject })
+                });
+
+                const data = await res.json();
+
+                if (data.success === 'true' || data.success === true) {
+                    showStatus('success', 'Message sent! I will get back to you shortly.');
+                    form.reset();
+                } else {
+                    showStatus('error', 'Something went wrong. Please email me directly at neddarfaddy00@gmail.com');
+                }
+            } catch(err) {
+                showStatus('error', 'Something went wrong. Please email me directly at neddarfaddy00@gmail.com');
+            } finally {
+                btn.disabled = false;
+                label.textContent = 'Send Message';
+            }
+        });
+    })();
+</script>
 </body>
 </html>
